@@ -2,6 +2,7 @@ import validator from "validator";
 import bycypt from "bcrypt";
 import { v2 as cloudinary } from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
+import jwt from "jsonwebtoken";
 
 // Api for adding doctor
 const addDoctor = async (req, res) => {
@@ -85,4 +86,33 @@ const addDoctor = async (req, res) => {
     }
 };
 
-export { addDoctor };
+// api for admin login
+const loginAdmin = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+            // Generate JWT token for admin
+            const token = jwt.sign(email + password, process.env.JWT_SECRET);
+            return res.status(200).json({
+                success: true,
+                message: "Admin logged in successfully",
+                token: token,
+            });
+        } else {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid email or password",
+            });
+        }
+    } catch (error) {
+        console.error("Error logging in admin:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+};
+
+export { addDoctor, loginAdmin };
