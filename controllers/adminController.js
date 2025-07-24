@@ -18,18 +18,7 @@ const addDoctor = async (req, res) => {
         // );
 
         // Validate required fields
-        if (
-            !name ||
-            !email ||
-            !password ||
-            !specialization ||
-            !degree ||
-            !experience ||
-            !about ||
-            !available ||
-            !fee ||
-            !address
-        ) {
+        if (!name || !email || !password || !specialization || !degree || !experience || !about || !fee || !address) {
             return res.status(400).json({ success: false, message: "Please fill all the fields" });
         }
 
