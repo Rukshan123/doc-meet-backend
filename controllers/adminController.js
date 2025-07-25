@@ -11,12 +11,6 @@ const addDoctor = async (req, res) => {
             req.body;
 
         const imageFile = req.file;
-
-        // console.log(
-        //     { name, email, password, image, specialization, degree, experience, about, available, fee, address },
-        //     imageFile
-        // );
-
         // Validate required fields
         if (!name || !email || !password || !specialization || !degree || !experience || !about || !fee || !address) {
             return res.status(400).json({ success: false, message: "Please fill all the fields" });
@@ -104,4 +98,23 @@ const loginAdmin = async (req, res) => {
     }
 };
 
-export { addDoctor, loginAdmin };
+//api for getting all doctors
+const getAllDoctors = async (req, res) => {
+    try {
+        const doctors = await doctorModel.find({}).select("-password"); // Exclude password from the response
+        res.status(200).json({
+            success: true,
+            data: doctors,
+        });
+    } catch (error) {
+        console.error("Error fetching doctors:", error);
+        toast;
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+};
+
+export { addDoctor, loginAdmin, getAllDoctors };
