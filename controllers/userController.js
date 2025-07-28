@@ -2,6 +2,7 @@ import validator from "validator";
 import bcrypt from "bcrypt";
 import userModel from "../models/userModel.js";
 import jwt from "jsonwebtoken";
+import { v2 as cloudinary } from "cloudinary";
 
 // API for user registration
 const registerUser = async (req, res) => {
@@ -106,8 +107,54 @@ const getUserProfile = async (req, res) => {
         return res.status(200).json({ success: true, user });
     } catch (error) {
         console.error("Error fetching user profile:", error.message);
-        return res.status(500).json({ success: false, message: "Internal server error" });
+        return res.status(500).json({ success: false, message: error.message || "Internal server error" });
     }
 };
 
-export { registerUser, loginUser, getUserProfile };
+// Api to update user profile
+const updateUserProfile = async (req, res) => {
+    try {
+        const { name, phone, dob, gender } = req.body;
+        let { address } = req.body;
+        const imageFile = req.file;
+        const userId = req.userId;
+
+        // Validate required fields
+        if (!name || !phone || !dob || !gender) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
+        }
+
+        // Parse address string safely
+        try {
+            address = typeof address === "string" ? JSON.parse(address) : address;
+        } catch (err) {
+            return res.status(400).json({ success: false, message: "Invalid address format" });
+        }
+
+        // Construct update object
+        const updateData = {
+            name,
+            phone,
+            address,
+            dob,
+            gender,
+        };
+
+        // Handle image upload if provided
+        if (imageFile) {
+            const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" });
+            updateData.image = imageUpload.secure_url;
+        }
+
+        // Update user
+        console.log("Updating user profile with data:", userId);
+        await userModel.findByIdAndUpdate(userId, updateData);
+
+        return res.status(202).json({ success: true, message: "User profile updated successfully", userId });
+    } catch (error) {
+        console.error("Error updating user profile:", error.message);
+        return res.status(500).json({ success: false, message: error.message || "Internal server error" });
+    }
+};
+
+export { registerUser, loginUser, getUserProfile, updateUserProfile };
