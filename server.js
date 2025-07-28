@@ -4,6 +4,7 @@ import "dotenv/config";
 import connectDB from "./config/mongodb.js";
 import connectCloudinary from "./config/cloundnary.js";
 import adminRouter from "./routes/adminRoute.js";
+import doctorRouter from "./routes/doctorRoute.js";
 
 // app configuration
 const app = express();
@@ -19,6 +20,8 @@ app.use(express.json());
 
 // admin routes
 app.use("/api/admin", adminRouter);
+// doctor routes
+app.use("/api/doctor", doctorRouter);
 
 app.get("/", (req, res) => {
     res.send("Welcome to the API!!");

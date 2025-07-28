@@ -18,4 +18,21 @@ const changeAvailability = async (req, res) => {
     }
 };
 
-export { changeAvailability };
+const getAllDoctorsList = async (req, res) => {
+    try {
+        const doctors = await doctorModel.find({}).select("-password"); // Exclude email,password from the response
+        res.status(200).json({
+            success: true,
+            doctors,
+        });
+    } catch (error) {
+        console.error("Error fetching doctors:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+};
+
+export { changeAvailability, getAllDoctorsList };

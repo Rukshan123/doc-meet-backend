@@ -108,7 +108,6 @@ const getAllDoctors = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching doctors:", error);
-        toast;
         res.status(500).json({
             success: false,
             message: "Internal server error",
