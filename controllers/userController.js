@@ -44,7 +44,7 @@ const registerUser = async (req, res) => {
 
         // creaate token
         const token = jwt.sign(
-            { userId: user._id, email: user.email },
+            { userId: user._id },
             process.env.JWT_SECRET,
             { expiresIn: "1h" } // Token expires in 1 hour
         );
@@ -93,4 +93,21 @@ const loginUser = async (req, res) => {
     }
 };
 
-export { registerUser, loginUser };
+// Api for get user profile data
+const getUserProfile = async (req, res) => {
+    try {
+        const { userId } = req; // pull from req.userId
+
+        const user = await userModel.findById(userId).select("-password");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        return res.status(200).json({ success: true, user });
+    } catch (error) {
+        console.error("Error fetching user profile:", error.message);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+export { registerUser, loginUser, getUserProfile };
