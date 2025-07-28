@@ -5,6 +5,7 @@ import connectDB from "./config/mongodb.js";
 import connectCloudinary from "./config/cloundnary.js";
 import adminRouter from "./routes/adminRoute.js";
 import doctorRouter from "./routes/doctorRoute.js";
+import userRouter from "./routes/userRoute.js";
 
 // app configuration
 const app = express();
@@ -22,6 +23,8 @@ app.use(express.json());
 app.use("/api/admin", adminRouter);
 // doctor routes
 app.use("/api/doctor", doctorRouter);
+// user routes
+app.use("/api/user", userRouter);
 
 app.get("/", (req, res) => {
     res.send("Welcome to the API!!");
