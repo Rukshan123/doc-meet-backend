@@ -162,7 +162,8 @@ const updateUserProfile = async (req, res) => {
 // Api to book appointment
 const bookAppointment = async (req, res) => {
     try {
-        const { userId, docId, slotDate, slotTime } = req.body;
+        const { docId, slotDate, slotTime } = req.body;
+        const userId = req.userId; // Get userId from the request
         const docData = await doctorModel.findById(docId).select("-password");
 
         if (!docData.available) {
@@ -185,7 +186,7 @@ const bookAppointment = async (req, res) => {
 
         const userData = await userModel.findById(userId).select("-password");
         if (!userData) {
-            return res.status(404).json({ success: false, message: "User not found" });
+            return res.status(404).json({ success: false, message: "User not found" + userId });
         }
 
         delete docData.slots_booked; // Remove slots_booked from doctor data to avoid circular reference
