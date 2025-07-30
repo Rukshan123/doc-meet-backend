@@ -217,4 +217,59 @@ const bookAppointment = async (req, res) => {
     }
 };
 
-export { registerUser, loginUser, getUserProfile, updateUserProfile, bookAppointment };
+// Api to get all appointments of user for my appointments page
+const listAppointments = async (req, res) => {
+    try {
+        const userId = req.userId; // Get userId from the request
+        const appointments = await appointmentModel.find({ userId });
+
+        return res.status(200).json({ success: true, appointments });
+    } catch (error) {
+        console.error(error.message);
+        return res.status(500).json({ success: false, message: error.message || "Internal server error" });
+    }
+};
+
+// Api to cancelled appointment
+const cancelAppointment = async (req, res) => {
+    try {
+        const userId = req.userId; // Get userId from the request
+        const { appointmentId } = req.body;
+
+        const appointmentData = await appointmentModel.findById(appointmentId);
+
+        // Check if the appointment exists
+        if (appointmentData.userId !== userId) {
+            return res
+                .status(403)
+                .json({ success: false, message: "You are not authorized to cancel this appointment" });
+        }
+
+        // Cancel the appointment
+        await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true });
+
+        // Release the slot back to the doctor
+        const { docId, slotDate, slotTime } = appointmentData;
+        const doctorData = await doctorModel.findById(docId);
+
+        let slots_booked = doctorData.slots_booked || {};
+
+        slots_booked[slotDate] = slots_booked[slotDate].filter((e) => e !== slotTime);
+
+        await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+        return res.status(200).json({ success: true, message: "Appointment cancelled successfully" });
+    } catch (error) {
+        console.error("Error cancelling appointment:", error.message);
+        return res.status(500).json({ success: false, message: error.message || "Internal server error" });
+    }
+};
+
+export {
+    registerUser,
+    loginUser,
+    getUserProfile,
+    updateUserProfile,
+    bookAppointment,
+    listAppointments,
+    cancelAppointment,
+};
