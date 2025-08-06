@@ -3,6 +3,7 @@ import bycypt from "bcrypt";
 import { v2 as cloudinary } from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
 import jwt from "jsonwebtoken";
+import appointmentModel from "../models/appointmentModel.js";
 
 // Api for adding doctor
 const addDoctor = async (req, res) => {
@@ -116,4 +117,48 @@ const getAllDoctors = async (req, res) => {
     }
 };
 
-export { addDoctor, loginAdmin, getAllDoctors };
+// api to get all appointments
+const appointmentsAdmin = async (req, res) => {
+    try {
+        const appointments = await appointmentModel.find({});
+        res.status(200).json({
+            success: true,
+            data: appointments,
+        });
+    } catch (error) {
+        console.error("Error fetching appointments:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+};
+
+// Api to cancelled appointment
+const cancelAppointmentAdmin = async (req, res) => {
+    try {
+        const { appointmentId } = req.body;
+
+        const appointmentData = await appointmentModel.findById(appointmentId);
+
+        // Cancel the appointment
+        await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true });
+
+        // Release the slot back to the doctor
+        const { docId, slotDate, slotTime } = appointmentData;
+        const doctorData = await doctorModel.findById(docId);
+
+        let slots_booked = doctorData.slots_booked || {};
+
+        slots_booked[slotDate] = slots_booked[slotDate].filter((e) => e !== slotTime);
+
+        await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+        return res.status(200).json({ success: true, message: "Appointment cancelled successfully" });
+    } catch (error) {
+        console.error("Error cancelling appointment:", error.message);
+        return res.status(500).json({ success: false, message: error.message || "Internal server error" });
+    }
+};
+
+export { addDoctor, loginAdmin, getAllDoctors, appointmentsAdmin, cancelAppointmentAdmin };
