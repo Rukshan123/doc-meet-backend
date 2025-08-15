@@ -4,6 +4,7 @@ import { v2 as cloudinary } from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
 import jwt from "jsonwebtoken";
 import appointmentModel from "../models/appointmentModel.js";
+import userModel from "../models/userModel.js";
 
 // Api for adding doctor
 const addDoctor = async (req, res) => {
@@ -161,4 +162,31 @@ const cancelAppointmentAdmin = async (req, res) => {
     }
 };
 
-export { addDoctor, loginAdmin, getAllDoctors, appointmentsAdmin, cancelAppointmentAdmin };
+// Api to get dashboard data for admin panel
+const adminDashboardData = async (req, res) => {
+    try {
+        const doctors = await doctorModel.find({});
+        const users = await userModel.find({});
+        const appointments = await appointmentModel.find({});
+
+        const dashboardData = {
+            doctors: doctors.length,
+            patients: users.length,
+            appointments: appointments.length,
+            latestAppointments: appointments.reverse().slice(0, 5),
+        };
+        res.status(200).json({
+            success: true,
+            data: dashboardData,
+        });
+    } catch (error) {
+        console.error("Error fetching admin dashboard data:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+};
+
+export { addDoctor, loginAdmin, getAllDoctors, appointmentsAdmin, cancelAppointmentAdmin, adminDashboardData };
